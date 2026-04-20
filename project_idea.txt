@@ -1,0 +1,16 @@
+App Idea: Verdict & Enhancements
+Your core concept is solid. Forcing sellers into structured, category-driven media checklists solves a real problem: amateur listings that waste buyers' time. Think of it as a "LinkedIn for real estate" where the profile form is mandatory and intelligent. Here are enhancements worth adding:
+
+Blueprint completion meter — A visual progress bar showing "7/10 required photos uploaded" so sellers know exactly what's missing before publishing
+
+Map pin integration — Google Maps or Leaflet.js embed for property location (critical for Moroccan buyers)
+
+Price history timeline — Show if the price was reduced, builds buyer trust
+
+Favorites / saved listings — Standard UX expectation
+
+WhatsApp share button — Most transactions in Morocco are closed via WhatsApp; add a deep-link share button on each listing
+
+Blueprint templates per sub-category — e.g., "Apartment → Studio" vs "Apartment → 3-bedroom" can have slightly different photo checklists
+
+Listing completeness score — A public badge like ✅ "Fully Documented" vs ⚠️ "Incomplete" on the explorer card, incentivizing quality
