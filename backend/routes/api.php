@@ -23,6 +23,7 @@ Route::get('/categories/{slug}', [CategoryController::class, 'show']);
 Route::get('/categories/{slug}/blueprint', [BlueprintController::class, 'getByCategorySlug']);
 
 Route::get('/properties', [PropertyController::class, 'index']);
+Route::get('/properties/search', [PropertyController::class, 'search']);
 Route::get('/properties/{id}', [PropertyController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {

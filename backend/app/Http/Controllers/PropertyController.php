@@ -66,9 +66,87 @@ class PropertyController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
 
-        $properties = $query->latest()->paginate(12);
+        $this->applySorting($query, $request->sort_by);
+
+        $properties = $query->paginate(12);
 
         return PropertyResource::collection($properties);
+    }
+
+    public function search(Request $request)
+    {
+        $query = Property::where('status', 'published')
+            ->with(['category', 'user', 'coverMedia']);
+
+        if ($request->filled('keyword')) {
+            $keyword = $request->keyword;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('title', 'like', "%{$keyword}%")
+                  ->orWhere('description', 'like', "%{$keyword}%")
+                  ->orWhere('city', 'like', "%{$keyword}%");
+            });
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('category')) {
+            $query->whereHas('category', fn($q) => $q->where('slug', $request->category));
+        }
+
+        if ($request->filled('city')) {
+            $query->where('city', $request->city);
+        }
+
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        if ($request->filled('min_size')) {
+            $query->whereHas('fieldValues', function ($q) use ($request) {
+                $q->whereHas('blueprintField', fn($bf) => $bf->where('field_key', 'surface_area'))
+                  ->where('value', '>=', $request->min_size);
+            });
+        }
+
+        if ($request->filled('max_size')) {
+            $query->whereHas('fieldValues', function ($q) use ($request) {
+                $q->whereHas('blueprintField', fn($bf) => $bf->where('field_key', 'surface_area'))
+                  ->where('value', '<=', $request->max_size);
+            });
+        }
+
+        if ($request->filled('rooms_count')) {
+            $query->whereHas('fieldValues', function ($q) use ($request) {
+                $q->whereHas('blueprintField', fn($bf) => $bf->where('field_key', 'rooms_count'))
+                  ->where('value', $request->rooms_count);
+            });
+        }
+
+        if ($request->filled('min_completion_score')) {
+            $query->where('completion_score', '>=', $request->min_completion_score);
+        }
+
+        $this->applySorting($query, $request->sort_by);
+
+        $properties = $query->paginate(12);
+
+        return PropertyResource::collection($properties);
+    }
+
+    private function applySorting($query, ?string $sortBy): void
+    {
+        match ($sortBy) {
+            'price_asc'   => $query->orderBy('price', 'asc'),
+            'price_desc'  => $query->orderBy('price', 'desc'),
+            'most_viewed' => $query->orderBy('views_count', 'desc'),
+            default       => $query->latest(),
+        };
     }
 
     public function show($id)
