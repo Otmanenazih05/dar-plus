@@ -7,6 +7,8 @@ use App\Models\BlueprintField;
 use App\Models\BlueprintMediaSlot;
 use App\Models\Property;
 use App\Models\PropertyFieldValue;
+use App\Models\SavedProperty;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -238,6 +240,8 @@ class PropertyController extends Controller
             'field_values' => 'sometimes|array',
         ]);
 
+        $oldPrice = $property->price;
+
         DB::transaction(function () use ($property, $data) {
             $property->update($data);
 
@@ -259,6 +263,20 @@ class PropertyController extends Controller
             $score = $this->calculateScore($property);
             $property->update(['completion_score' => $score]);
         });
+
+        if (isset($data['price']) && $data['price'] !== $oldPrice) {
+            $saverIds = SavedProperty::where('property_id', $property->id)->pluck('user_id');
+            $service  = new NotificationService();
+
+            foreach ($saverIds as $userId) {
+                $service->priceChanged($userId, [
+                    'property_title' => $property->title,
+                    'property_id'    => $property->id,
+                    'old_price'      => $oldPrice,
+                    'new_price'      => $data['price'],
+                ]);
+            }
+        }
 
         $property->load(['category', 'user', 'fieldValues.blueprintField', 'coverMedia']);
 
@@ -294,6 +312,11 @@ class PropertyController extends Controller
         }
 
         $property->update(['status' => 'published']);
+
+        (new NotificationService())->listingPublished($property->user_id, [
+            'property_title' => $property->title,
+            'property_id'    => $property->id,
+        ]);
 
         return new PropertyResource($property);
     }

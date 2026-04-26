@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\PropertyResource;
 use App\Models\Property;
 use App\Models\SavedProperty;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class SavedPropertyController extends Controller
@@ -41,6 +42,15 @@ class SavedPropertyController extends Controller
             'user_id'     => $request->user()->id,
             'property_id' => $property->id,
         ]);
+
+        if ($property->user_id !== $request->user()->id) {
+            (new NotificationService())->listingSaved($property->user_id, [
+                'buyer_name'     => $request->user()->name,
+                'buyer_id'       => $request->user()->id,
+                'property_title' => $property->title,
+                'property_id'    => $property->id,
+            ]);
+        }
 
         return response()->json(['saved' => true]);
     }
