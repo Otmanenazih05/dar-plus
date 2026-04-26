@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\MessageResource;
 use App\Models\Conversation;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class MessageController extends Controller
@@ -43,6 +44,21 @@ class MessageController extends Controller
         ]);
 
         $conversation->update(['last_message_at' => now()]);
+
+        $recipientId = $conversation->buyer_id === $request->user()->id
+            ? $conversation->seller_id
+            : $conversation->buyer_id;
+
+        $conversation->load('property');
+
+        (new NotificationService())->newMessage($recipientId, [
+            'sender_name'     => $request->user()->name,
+            'sender_id'       => $request->user()->id,
+            'property_title'  => $conversation->property->title,
+            'property_id'     => $conversation->property_id,
+            'conversation_id' => $conversation->id,
+            'body'            => $data['body'],
+        ]);
 
         $message->load('sender');
 

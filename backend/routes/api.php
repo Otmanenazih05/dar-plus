@@ -5,6 +5,7 @@ use App\Http\Controllers\BlueprintController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyMediaController;
 use App\Http\Controllers\SavedPropertyController;
@@ -57,5 +58,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/conversations/{id}/messages',       [MessageController::class, 'index']);
     Route::post('/conversations/{id}/messages',      [MessageController::class, 'store']);
     Route::post('/conversations/{id}/messages/read', [MessageController::class, 'markRead']);
+
+    Route::get('/notifications',              [NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::post('/notifications/read-all',    [NotificationController::class, 'markAllRead']);
+    Route::post('/notifications/{id}/read',   [NotificationController::class, 'markRead']);
 });
 
